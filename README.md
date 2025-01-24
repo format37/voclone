@@ -1,10 +1,10 @@
-# EchoBridgeBot
+# VoCloneBot
 
 A sophisticated AI-powered voice cloning and conversation system that enables natural, personalized interactions through voice synthesis and recognition.
 
 ## Overview
 
-(EchoBridgeBot)[https://t.me/voclonebot] facilitates meaningful conversations with AI using voice cloning technology. Whether conducting practice interviews or engaging in personal interactions, the system provides an authentic and emotionally resonant experience through personalized voice synthesis.
+[VoCloneBot](https://t.me/voclone) facilitates meaningful conversations with AI using voice cloning technology. Whether conducting practice interviews or engaging in personal interactions, the system provides an authentic and emotionally resonant experience through personalized voice synthesis.
 
 ## Key Features
 
@@ -26,8 +26,8 @@ A sophisticated AI-powered voice cloning and conversation system that enables na
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/format37/echobridgebot.git
-cd echobridgebot
+git clone https://github.com/format37/voclone.git
+cd voclone
 ```
 
 2. Configure the environment:
@@ -50,7 +50,7 @@ sh build_and_run.sh
     "TOKEN": "your_telegram_token",
     "OPENAI_API_KEY": "your_openai_key",
     "LANGSMITH_API_KEY": "your_langsmith_key",
-    "LANGSMITH_PROJECT": "echobridgebot",
+    "LANGSMITH_PROJECT": "voclonebot",
     "HISTORY_THRESHOLD": 4000,
     "TTS_API_URL": "http://localhost:5000"
 }
