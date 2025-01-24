@@ -15,11 +15,11 @@ A sophisticated AI-powered voice cloning and conversation system that enables na
 
 ## Technical Stack
 
-- **Voice Synthesis**: Custom TTS implementation with GPU acceleration
-- **Speech Recognition**: Google Cloud Speech-to-Text API
+- **Voice Synthesis**: [Custom TTS implementation](https://github.com/format37/tts/tree/main/TTS) with GPU acceleration
+- **Speech Recognition**: [Google Cloud Speech-to-Text](https://github.com/format37/stt/tree/main/google/docker) API
 - **API Gateway**: FastAPI for microservice communication
-- **Proxy Service**: ngrok for secure tunneling
-- **Bot Framework**: Custom Telegram server for rapid response handling
+- **Proxy Service**: [ngrok](https://ngrok.com) for secure tunneling
+- **Bot Framework**: [Custom Telegram server](https://github.com/format37/telegram_bot) for rapid response handling
 - **Containerization**: Docker-based microservices architecture
 
 ## Installation
