@@ -1,0 +1,4 @@
+Hello, I can talk with you using any voice.
+To define the voice, send me the voice reference as a WAV file.
+To talk, send me voice message. I can determine your language automatically.
+Send me /reset command to reset my conversation memory.
