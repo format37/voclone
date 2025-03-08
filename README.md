@@ -12,6 +12,7 @@ A sophisticated AI-powered voice cloning and conversation system that enables na
 - **Multi-language Support**: Automatic language detection and processing
 - **Real-time Processing**: Fast response times through distributed architecture
 - **Secure Communication**: Protected data transmission via ngrok tunneling
+- **Personality Customization**: Personalize the AI's behavior and responses using user-defined Mentagram
 
 ## Technical Stack
 
@@ -79,6 +80,31 @@ endpoints:
 2. Upload a WAV file as voice reference
 3. Send voice messages to interact with the AI
 4. Use `/reset` to clear conversation history
+5. Use `/mentagram` to customize the AI's personality:
+   - The bot will send you a JSON file with your current configuration
+   - Edit this file to customize how the AI behaves and responds
+   - Upload the modified file back to the bot to apply your changes
+   - Use `/init_reset` to revert to default settings
+
+![VoCloneBot Interface](assets/voclone.png)
+
+### Mentagram Configuration
+
+The mentagram.json file allows you to customize:
+- **system_prompt**: Define how the AI should behave and respond
+- **chat_history**: Set up initial conversation context and memory
+
+Example configuration:
+```json
+{
+  "system_prompt": "Your name is Janet. You are a helpful AI assistant that specializes in technology and science topics.",
+  "chat_history": [
+    ["system", "Always provide examples in your explanations."],
+    ["user", "How can you help me learn about AI?"],
+    ["assistant", "I can explain AI concepts, recommend resources, and answer questions about machine learning, neural networks, and related topics."]
+  ]
+}
+```
 
 ## Dependencies
 
