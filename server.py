@@ -577,6 +577,8 @@ async def call_message(request: Request, authorization: str = Header(None)):
 
     # Handle the /mind command to provide a sample or current init.json
     if text == '/mind':
+        # Log the /mind command
+        logger.info(f"User {user_id} requested mind configuration")
         # Get current init data or create sample if none exists
         init_data = get_user_init_data(user_id)
         
