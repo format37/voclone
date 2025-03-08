@@ -113,23 +113,33 @@ def manage_chat_history(user_id: str, message_id: str, text: Union[str, dict], r
         files.pop(0)
 
 def get_chat_history(user_id: str) -> list:
-    """Retrieves chat history for a user as a list of message tuples."""
+    """Retrieves chat history for a user as a list of message tuples,
+    including any initialization history."""
+    # First, get any initialization history
+    init_data = get_user_init_data(user_id)
+    history = []
+    
+    # Add initialization history if it exists
+    if 'chat_history' in init_data and isinstance(init_data['chat_history'], list):
+        for entry in init_data['chat_history']:
+            if isinstance(entry, list) and len(entry) == 2:
+                history.append((entry[0], entry[1]))
+    
     user_dir = f'data/users/{user_id}'
     if not os.path.exists(user_dir):
-        return []
+        return history  # Return just initialization history if no user directory
 
     # Get all message files and their creation times
     files = []
     for f in os.listdir(user_dir):
-        if f.endswith('.json'):
+        if f.endswith('.json') and f != 'init_config.json':
             filepath = os.path.join(user_dir, f)
             files.append((filepath, os.path.getctime(filepath)))
 
     # Sort files by creation time (oldest first)
     files.sort(key=lambda x: x[1])
 
-    # Build chat history list
-    history = []
+    # Add regular chat history
     for filepath, _ in files:
         with open(filepath, 'r', encoding='utf-8') as f:
             message_data = json.load(f)
@@ -231,10 +241,15 @@ def process_llm_response(user_id: str, message_id: str, user_message: str, chat_
         # Get chat history and create prompt template
         chat_history = get_chat_history(user_id)
         
+        # Get initialization data for custom system prompt
+        init_data = get_user_init_data(user_id)
+        system_prompt = init_data.get('system_prompt', 
+            f"Your name is Janet. You are a helpful AI assistant. Please respond in {language} language.")
+        
         # Create prompt template with history placeholder
         history_placeholder = MessagesPlaceholder("history")
         prompt_template = ChatPromptTemplate.from_messages([
-            ("system", f"Your name is Janet. You are a helpful AI assistant. Please respond in {language} language."),
+            ("system", system_prompt),
             history_placeholder,
             ("human", "{question}")
         ])
@@ -331,39 +346,40 @@ async def call_message(request: Request, authorization: str = Header(None)):
     chat_id = message['chat']['id']
     user_id = str(message['from']['id'])
 
-    # Handle audio document
-    if 'document' in message and 'mime_type' in message['document'] and 'audio' in message['document']['mime_type']:
-        try:
-            # Get the file from Telegram
-            file_id = message['document']['file_id']
-            file_info = bot.get_file(file_id)
-            file_path = file_info.file_path
-
-            # Convert to WAV if needed
-            wav_path, temp_dir = convert_audio_to_wav(file_path)
-            
-            # Upload to TTS server
-            tts_api_address = config.get('TTS_API_URL', 'http://localhost:5000')
-            filename = f"{user_id}.wav" # One reference for each user
-            response = upload_reference_file(wav_path, api_url=tts_api_address, filename=filename)
-            
-            # Clean up temporary files
-            os.remove(wav_path)
-            os.rmdir(temp_dir)
-            
-            bot.send_message(
-                chat_id,
-                "Reference audio file successfully uploaded!",
-                reply_to_message_id=message['message_id']
-            )
-        except Exception as e:
-            logger.error(f"Error processing audio document: {e}")
-            bot.send_message(
-                chat_id,
-                "Sorry, there was an error processing the audio file.",
-                reply_to_message_id=message['message_id']
-            )
-        return JSONResponse(content={"type": "empty", "body": ''})
+    # Handle document uploads
+    if 'document' in message and 'mime_type' in message['document']:
+        # Handle init.json file
+        if message['document']['file_name'] == 'init.json' and 'application/json' in message['document']['mime_type']:
+            try:
+                # Get the file from Telegram
+                file_id = message['document']['file_id']
+                file_info = bot.get_file(file_id)
+                file_path = file_info.file_path
+                
+                # Load and parse the init.json file
+                with open(file_path, 'r') as f:
+                    init_data = json.load(f)
+                
+                # Save the initialization data
+                save_user_init_data(user_id, init_data)
+                
+                bot.send_message(
+                    chat_id,
+                    "Initialization file successfully processed!",
+                    reply_to_message_id=message['message_id']
+                )
+            except Exception as e:
+                logger.error(f"Error processing init.json file: {e}")
+                bot.send_message(
+                    chat_id,
+                    "Sorry, there was an error processing the initialization file.",
+                    reply_to_message_id=message['message_id']
+                )
+            return JSONResponse(content={"type": "empty", "body": ''})
+        
+        # Handle audio documents (existing code)
+        elif 'audio' in message['document']['mime_type']:
+            # Existing code for audio document processing...
 
     # Handle voice message
     if 'voice' in message and 'audio' in message['voice']['mime_type']:
@@ -528,6 +544,15 @@ async def call_message(request: Request, authorization: str = Header(None)):
         )
         return JSONResponse(content={"type": "empty", "body": ''})
     
+    if text == '/init_reset':
+        reset_user_init_data(user_id)
+        bot.send_message(
+            chat_id,
+            "Initialization configuration has been reset.",
+            reply_to_message_id=message['message_id']
+        )
+        return JSONResponse(content={"type": "empty", "body": ''})
+    
     if text == '/start':
         try:
             with open('greeting.txt', 'r') as f:
@@ -550,6 +575,41 @@ async def call_message(request: Request, authorization: str = Header(None)):
             )
             return JSONResponse(content={"type": "empty", "body": ''})
 
+    # Handle the /mind command to provide a sample or current init.json
+    if text == '/mind':
+        # Get current init data or create sample if none exists
+        init_data = get_user_init_data(user_id)
+        
+        # If user has no init data, create a sample
+        if not init_data:
+            init_data = {
+                "system_prompt": "Your name is Janet. You are a helpful AI assistant that specializes in answering questions clearly and accurately.",
+                "chat_history": [
+                    ["system", "Remember to be friendly and concise in your responses."],
+                    ["user", "What can you help me with?"],
+                    ["assistant", "I can help you with information, answering questions, creative writing, language translation, and more. Just let me know what you need!"]
+                ]
+            }
+        
+        # Create temporary file to send to user
+        temp_file_path = f'data/init_{user_id}.json'
+        with open(temp_file_path, 'w', encoding='utf-8') as f:
+            json.dump(init_data, f, ensure_ascii=False, indent=2)
+        
+        # Send file to user
+        with open(temp_file_path, 'rb') as f:
+            bot.send_document(
+                chat_id,
+                f,
+                caption="Here's your current mind configuration. You can modify this file and upload it back to change how I behave.",
+                reply_to_message_id=message['message_id'],
+                visible_file_name="init.json"
+            )
+        
+        # Clean up temp file
+        os.remove(temp_file_path)
+        return JSONResponse(content={"type": "empty", "body": ''})
+
     # Process LLM response
     process_llm_response(
         user_id,
@@ -565,3 +625,30 @@ async def call_message(request: Request, authorization: str = Header(None)):
 @app.get("/test")
 async def call_test():
     return JSONResponse(content={"status": "ok"})
+
+def save_user_init_data(user_id: str, init_data: dict) -> None:
+    """Saves user initialization data from init.json"""
+    user_dir = f'data/users/{user_id}'
+    os.makedirs(user_dir, exist_ok=True)
+    
+    # Save the initialization data
+    init_file_path = os.path.join(user_dir, 'init_config.json')
+    with open(init_file_path, 'w', encoding='utf-8') as f:
+        json.dump(init_data, f, ensure_ascii=False)
+    
+    logger.info(f"Initialization data saved for user {user_id}")
+
+def get_user_init_data(user_id: str) -> dict:
+    """Retrieves user initialization data if it exists"""
+    init_file_path = f'data/users/{user_id}/init_config.json'
+    if os.path.exists(init_file_path):
+        with open(init_file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+def reset_user_init_data(user_id: str) -> None:
+    """Removes the initialization data for a user"""
+    init_file_path = f'data/users/{user_id}/init_config.json'
+    if os.path.exists(init_file_path):
+        os.remove(init_file_path)
+        logger.info(f"Initialization data reset for user {user_id}")
