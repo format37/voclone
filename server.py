@@ -561,17 +561,30 @@ async def call_message(request: Request, authorization: str = Header(None)):
             with open("BCP-47.txt", "r") as f:
                 languages = [line.strip() for line in f if line.strip()]
             greeting += f'\nSupported languages: {languages}'
-            bot.send_message(
-                chat_id,
-                greeting,
-                reply_to_message_id=message['message_id']
-            )
+            greeting += "\n\nUse /mentagram to get your personalization file. You can edit this file and upload it back to customize how I behave and respond to you!"
+            
+            # Send voclone.png with caption
+            try:
+                with open('voclone.png', 'rb') as photo:
+                    bot.send_photo(
+                        chat_id,
+                        photo,
+                        caption=greeting,
+                        reply_to_message_id=message['message_id']
+                    )
+            except FileNotFoundError:
+                # Fall back to text if image not available
+                bot.send_message(
+                    chat_id,
+                    greeting,
+                    reply_to_message_id=message['message_id']
+                )
             return JSONResponse(content={"type": "empty", "body": ''})
         except FileNotFoundError:
             logger.error("greeting.txt not found")
             bot.send_message(
                 chat_id,
-                "Welcome! I'm Janet, your AI assistant.",
+                "Welcome! I'm Janet, your AI assistant. You can use /mentagram to customize how I behave!",
                 reply_to_message_id=message['message_id']
             )
             return JSONResponse(content={"type": "empty", "body": ''})
