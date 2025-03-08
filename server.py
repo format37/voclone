@@ -614,36 +614,33 @@ async def call_message(request: Request, authorization: str = Header(None)):
     if text == '/mentagram':
         # Log the /mentagram command
         logger.info(f"User {user_id} requested mentagram configuration")
-        # Get current init data or create sample if none exists
-        init_data = get_user_init_data(user_id)
         
-        # If user has no init data, load from mentagram.json
-        if not init_data:
-            try:
-                with open('mentagram.json', 'r', encoding='utf-8') as f:
-                    init_data = json.load(f)
-            except FileNotFoundError:
-                logger.error("mentagram.json not found")
-                init_data = {
-                    "system_prompt": "Your name is Janet. You are a helpful AI assistant that specializes in answering questions clearly and accurately.",
-                    "chat_history": [
-                        ["system", "Remember to be friendly and concise in your responses."],
-                        ["user", "What can you help me with?"],
-                        ["assistant", "I can help you with information, answering questions, creative writing, language translation, and more. Just let me know what you need!"]
-                    ]
-                }
+        # Always load the default mentagram.json
+        try:
+            with open('mentagram.json', 'r', encoding='utf-8') as f:
+                default_config = json.load(f)
+        except FileNotFoundError:
+            logger.error("mentagram.json not found")
+            default_config = {
+                "system_prompt": "Your name is Janet. You are a helpful AI assistant that specializes in answering questions clearly and accurately.",
+                "chat_history": [
+                    ["system", "Remember to be friendly and concise in your responses."],
+                    ["user", "What can you help me with?"],
+                    ["assistant", "I can help you with information, answering questions, creative writing, language translation, and more. Just let me know what you need!"]
+                ]
+            }
         
         # Create temporary file to send to user
         temp_file_path = f'data/init_{user_id}.json'
         with open(temp_file_path, 'w', encoding='utf-8') as f:
-            json.dump(init_data, f, ensure_ascii=False, indent=2)
+            json.dump(default_config, f, ensure_ascii=False, indent=2)
         
         # Send file to user
         with open(temp_file_path, 'rb') as f:
             bot.send_document(
                 chat_id,
                 f,
-                caption="Here's your current mentagram configuration. You can modify this file and upload it back to change how I behave.",
+                caption="Here's the default mentagram configuration. You can upload this file to reset your personalization settings to default.",
                 reply_to_message_id=message['message_id'],
                 visible_file_name="mentagram.json"
             )
