@@ -1,1 +1,1 @@
-sudo docker logs -f echobridgebot
+sudo docker logs -f voclonebot
