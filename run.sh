@@ -1,6 +1,6 @@
 # Set the container name
-CONTAINER_NAME="echobridgebot"
-IMAGE_NAME="echobridgebot_image"
+CONTAINER_NAME="voclonebot"
+IMAGE_NAME="voclonebot_image"
 TELEGRAM_BOT_TOKEN="your_bot_token"
 
 # Check if config.json exists
@@ -13,6 +13,12 @@ fi
 if [ ! -d "$(pwd)/data" ]; then
     echo "Creating data directory..."
     mkdir -p "$(pwd)/data"
+fi
+
+# Check if container already exists and remove it if it does
+if [ "$(sudo docker ps -a -q -f name=$CONTAINER_NAME)" ]; then
+    echo "Container with name $CONTAINER_NAME already exists. Removing it..."
+    sudo docker rm -f $CONTAINER_NAME
 fi
 
 # Run the container
@@ -31,7 +37,7 @@ sudo docker run -d \
 # Check if container started successfully
 if [ "$(sudo docker ps -q -f name=$CONTAINER_NAME)" ]; then
     echo "Container started successfully!"
-    echo "Bot server is running on port 4222"
+    echo "Bot server is running on port 4223"
 else
     echo "Error: Container failed to start."
     exit 1

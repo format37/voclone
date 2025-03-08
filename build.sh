@@ -4,8 +4,8 @@
 # Should be placed in the project root directory
 
 # Set the container name
-CONTAINER_NAME="echobridgebot"
-IMAGE_NAME="echobridgebot_image"
+CONTAINER_NAME="voclonebot"
+IMAGE_NAME="voclonebot_image"
 
 echo "Starting bot server deployment..."
 

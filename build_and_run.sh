@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Build the container
-./build.sh
+sh build.sh
 
 # Run the container 
-./run.sh
+sh run.sh
 
 # Show logs
-./logs.sh
+sh logs.sh
