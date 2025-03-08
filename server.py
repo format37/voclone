@@ -380,6 +380,7 @@ async def call_message(request: Request, authorization: str = Header(None)):
         # Handle audio documents (existing code)
         elif 'audio' in message['document']['mime_type']:
             # Existing code for audio document processing...
+            pass
 
     # Handle voice message
     if 'voice' in message and 'audio' in message['voice']['mime_type']:
