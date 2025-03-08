@@ -15,5 +15,6 @@ COPY stt_tools.py /server
 COPY tts_tools.py /server
 COPY BCP-47.txt /server
 COPY greeting.txt /server
+COPY mentagram.json /server
 COPY server.py /server
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "4223"]

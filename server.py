@@ -348,15 +348,15 @@ async def call_message(request: Request, authorization: str = Header(None)):
 
     # Handle document uploads
     if 'document' in message and 'mime_type' in message['document']:
-        # Handle init.json file
-        if message['document']['file_name'] == 'init.json' and 'application/json' in message['document']['mime_type']:
+        # Handle mentagram.json file
+        if message['document']['file_name'] == 'mentagram.json' and 'application/json' in message['document']['mime_type']:
             try:
                 # Get the file from Telegram
                 file_id = message['document']['file_id']
                 file_info = bot.get_file(file_id)
                 file_path = file_info.file_path
                 
-                # Load and parse the init.json file
+                # Load and parse the mentagram.json file
                 with open(file_path, 'r') as f:
                     init_data = json.load(f)
                 
@@ -369,7 +369,7 @@ async def call_message(request: Request, authorization: str = Header(None)):
                     reply_to_message_id=message['message_id']
                 )
             except Exception as e:
-                logger.error(f"Error processing init.json file: {e}")
+                logger.error(f"Error processing mentagram.json file: {e}")
                 bot.send_message(
                     chat_id,
                     "Sorry, there was an error processing the initialization file.",
@@ -576,23 +576,28 @@ async def call_message(request: Request, authorization: str = Header(None)):
             )
             return JSONResponse(content={"type": "empty", "body": ''})
 
-    # Handle the /mind command to provide a sample or current init.json
-    if text == '/mind':
-        # Log the /mind command
-        logger.info(f"User {user_id} requested mind configuration")
+    # Handle the /mind command to provide a sample or current mentagram.json
+    if text == '/mentagram':
+        # Log the /mentagram command
+        logger.info(f"User {user_id} requested mentagram configuration")
         # Get current init data or create sample if none exists
         init_data = get_user_init_data(user_id)
         
-        # If user has no init data, create a sample
+        # If user has no init data, load from mentagram.json
         if not init_data:
-            init_data = {
-                "system_prompt": "Your name is Janet. You are a helpful AI assistant that specializes in answering questions clearly and accurately.",
-                "chat_history": [
-                    ["system", "Remember to be friendly and concise in your responses."],
-                    ["user", "What can you help me with?"],
-                    ["assistant", "I can help you with information, answering questions, creative writing, language translation, and more. Just let me know what you need!"]
-                ]
-            }
+            try:
+                with open('mentagram.json', 'r', encoding='utf-8') as f:
+                    init_data = json.load(f)
+            except FileNotFoundError:
+                logger.error("mentagram.json not found")
+                init_data = {
+                    "system_prompt": "Your name is Janet. You are a helpful AI assistant that specializes in answering questions clearly and accurately.",
+                    "chat_history": [
+                        ["system", "Remember to be friendly and concise in your responses."],
+                        ["user", "What can you help me with?"],
+                        ["assistant", "I can help you with information, answering questions, creative writing, language translation, and more. Just let me know what you need!"]
+                    ]
+                }
         
         # Create temporary file to send to user
         temp_file_path = f'data/init_{user_id}.json'
@@ -604,9 +609,9 @@ async def call_message(request: Request, authorization: str = Header(None)):
             bot.send_document(
                 chat_id,
                 f,
-                caption="Here's your current mind configuration. You can modify this file and upload it back to change how I behave.",
+                caption="Here's your current mentagram configuration. You can modify this file and upload it back to change how I behave.",
                 reply_to_message_id=message['message_id'],
-                visible_file_name="init.json"
+                visible_file_name="mentagram.json"
             )
         
         # Clean up temp file
@@ -630,7 +635,7 @@ async def call_test():
     return JSONResponse(content={"status": "ok"})
 
 def save_user_init_data(user_id: str, init_data: dict) -> None:
-    """Saves user initialization data from init.json"""
+    """Saves user initialization data from mentagramjson"""
     user_dir = f'data/users/{user_id}'
     os.makedirs(user_dir, exist_ok=True)
     
