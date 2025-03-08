@@ -167,7 +167,8 @@ def clear_chat_history(user_id: str) -> None:
     user_dir = f'data/users/{user_id}'
     if os.path.exists(user_dir):
         for file in os.listdir(user_dir):
-            if file.endswith('.json'):
+            # Skip the init_config.json file which contains mentagram configuration
+            if file.endswith('.json') and file != 'init_config.json':
                 os.remove(os.path.join(user_dir, file))
 
 def convert_audio_to_wav(input_path: str) -> str:
@@ -541,15 +542,6 @@ async def call_message(request: Request, authorization: str = Header(None)):
         bot.send_message(
             chat_id,
             "Chat history has been reset.",
-            reply_to_message_id=message['message_id']
-        )
-        return JSONResponse(content={"type": "empty", "body": ''})
-    
-    if text == '/init_reset':
-        reset_user_init_data(user_id)
-        bot.send_message(
-            chat_id,
-            "Initialization configuration has been reset.",
             reply_to_message_id=message['message_id']
         )
         return JSONResponse(content={"type": "empty", "body": ''})

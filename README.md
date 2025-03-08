@@ -79,12 +79,12 @@ endpoints:
 1. Start a conversation with the bot on Telegram
 2. Upload a WAV file as voice reference
 3. Send voice messages to interact with the AI
-4. Use `/reset` to clear conversation history
+4. Use `/reset` to clear conversation history without affecting your personalization settings
 5. Use `/mentagram` to customize the AI's personality:
    - The bot will send you a JSON file with your current configuration
    - Edit this file to customize how the AI behaves and responds
    - Upload the modified file back to the bot to apply your changes
-   - Use `/init_reset` to revert to default settings
+   - To reset to default settings, upload a new mentagram.json file with default values
 
 ![VoCloneBot Interface](assets/voclone.png)
 
