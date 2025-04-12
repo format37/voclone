@@ -2,6 +2,11 @@ import requests
 import os
 import time
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
+# Set logger level to INFO
+logger.setLevel(logging.INFO)
 
 def generate_speech(text, language, reference_file='asmr_0.wav', api_url="http://localhost:5000"):
     # Request payload
@@ -14,7 +19,7 @@ def generate_speech(text, language, reference_file='asmr_0.wav', api_url="http:/
     try:
         # Send POST request
         response = requests.post(f"{api_url}/tts", json=payload)
-        
+        logger.info(f"TTS response: {response}")
         # Check if request was successful
         if response.status_code == 200:
             # Create data directory if it doesn't exist

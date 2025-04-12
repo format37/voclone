@@ -201,6 +201,7 @@ def convert_audio_to_wav(input_path: str) -> str:
 def send_voice_message(chat_id, voice_file_path, reply_to_message_id=None):
     """Helper function to send voice messages via Telegram"""
     try:
+        logger.info(f"Sending voice message: {voice_file_path} to {chat_id}")
         # Convert WAV to OGG format with OPUS codec
         audio = AudioSegment.from_wav(voice_file_path)
         ogg_path = voice_file_path.replace('.wav', '.ogg')
@@ -282,7 +283,7 @@ def process_llm_response(user_id: str, message_id: str, user_message: str, chat_
         try:
             # Get TTS server URL from config
             tts_api_url = config.get('TTS_API_URL', 'http://localhost:5000')
-            
+            logger.info(f"Calling TTS API URL: {tts_api_url}")
             # Generate speech using the user's reference file
             speech_file_name = generate_speech(
                 text=llm_response,
@@ -290,7 +291,7 @@ def process_llm_response(user_id: str, message_id: str, user_message: str, chat_
                 reference_file=f"{user_id}.wav",
                 api_url=tts_api_url
             )
-            
+            logger.info(f"Generated speech file name: {speech_file_name}")
             # Send voice message
             send_voice_message(
                 chat_id,
