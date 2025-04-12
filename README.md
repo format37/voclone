@@ -62,7 +62,11 @@ sh build_and_run.sh
 sudo snap install ngrok
 ```
 
-Configure ngrok service:
+Configure ngrok service. Open ngrok.yaml:
+```
+ngrok config edit
+```
+Define:
 ```yaml
 version: "3"
 agent:
@@ -72,6 +76,13 @@ endpoints:
     url: your_url
     upstream:
       url: 5000
+```
+Install agent as system service:
+https://ngrok.com/docs/agent/
+
+Check status:
+```
+sudo systemctl status ngrok
 ```
 
 ## Usage
