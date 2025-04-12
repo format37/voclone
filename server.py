@@ -469,6 +469,7 @@ async def call_message(request: Request, authorization: str = Header(None)):
                     parse_mode='MarkdownV2'
                 )
                 stt_response = transcribe_multiple_languages(wav_path, languages)
+                logger.info(f"STT response: {stt_response}")
                 for result in stt_response.results:
                     detected_language = result.language_code
                     transcript = result.alternatives[0].transcript

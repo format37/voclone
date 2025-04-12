@@ -1,5 +1,10 @@
 from typing import List
 from google.cloud import speech_v1 as speech
+import logging
+
+logger = logging.getLogger(__name__)
+# Set logger level to INFO
+logger.setLevel(logging.INFO)
 
 def transcribe_multiple_languages(audio_file: str, language_codes: List[str]):
     """Transcribe an audio file using Google Cloud Speech-to-Text API with support for multiple languages.
@@ -25,7 +30,7 @@ def transcribe_multiple_languages(audio_file: str, language_codes: List[str]):
     }
 
     audio = {"content": audio_content}
-    
+    logger.info(f"STT Config: {config}")
     response = client.recognize(config=config, audio=audio)
 
     return response
